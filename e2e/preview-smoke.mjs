@@ -1,0 +1,17 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await browser.newPage()
+const errors = []
+page.on('pageerror', (e) => errors.push(String(e)))
+page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+await page.goto('http://localhost:5299')
+await page.waitForSelector('.library-empty, .book-card', { timeout: 8000 })
+await page.waitForTimeout(600)
+const chooser = page.waitForEvent('filechooser', { timeout: 8000 })
+await page.keyboard.press('o')
+await (await chooser).setFiles(process.env.SAMPLE)
+await page.waitForSelector('.book-card', { timeout: 15000 })
+await page.keyboard.press('Enter')
+await page.waitForSelector('.page canvas', { timeout: 15000 })
+console.log('prod build: reader renders; errors:', errors.length ? errors : 'none')
+await browser.close()

@@ -1,0 +1,36 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
+await page.goto('http://localhost:5199')
+await page.waitForTimeout(400)
+if (await page.locator('.library-empty').isVisible().catch(() => false)) {
+  const chooser = page.waitForEvent('filechooser')
+  await page.keyboard.press('o')
+  await (await chooser).setFiles(process.env.SAMPLE)
+}
+await page.waitForSelector('.book-card')
+await page.keyboard.press('Enter')
+await page.waitForSelector('.page canvas')
+await page.waitForTimeout(500)
+// go to page 20
+await page.keyboard.press(':')
+await page.keyboard.type('20')
+await page.keyboard.press('Enter')
+await page.waitForFunction(() => document.querySelector('.reader-status span')?.textContent?.trim().startsWith('20'), undefined, { timeout: 5000 })
+await page.waitForTimeout(1200)
+const before = await page.locator('.reader-status span').first().textContent()
+const saved = await page.evaluate(async () => {
+  const req = indexedDB.open('pdf-reader')
+  const db = await new Promise((res) => { req.onsuccess = () => res(req.result) })
+  const tx = db.transaction('bookState')
+  const all = await new Promise((res) => { const r = tx.objectStore('bookState').getAll(); r.onsuccess = () => res(r.result) })
+  return all
+})
+console.log('before reload:', before, 'saved state:', JSON.stringify(saved))
+await page.reload()
+await page.waitForSelector('.book-card')
+await page.keyboard.press('Enter')
+await page.waitForSelector('.page canvas')
+await page.waitForTimeout(900)
+console.log('after reload:', await page.locator('.reader-status span').first().textContent())
+await browser.close()

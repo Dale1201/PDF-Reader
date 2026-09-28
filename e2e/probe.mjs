@@ -1,0 +1,38 @@
+import { chromium } from 'playwright'
+const SHOT = process.env.SHOT_DIR
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
+await page.goto('http://localhost:5199')
+await page.waitForTimeout(500)
+const chooser = page.waitForEvent('filechooser')
+await page.keyboard.press('o')
+await (await chooser).setFiles(process.env.SAMPLE)
+await page.waitForSelector('.book-card')
+await page.keyboard.press('Enter')
+await page.waitForSelector('.page canvas')
+await page.keyboard.press(':')
+await page.waitForSelector('.goto input')
+await page.keyboard.type('3')
+await page.keyboard.press('Enter')
+await page.waitForTimeout(1200)
+const spans = page.locator('.page[data-page="3"] .textLayer span')
+for (let i = 0; i < 4; i++) {
+  await spans.nth(i * 2).click({ clickCount: 3 })
+  await page.waitForTimeout(150)
+  await page.keyboard.press(String(i + 1))
+  await page.waitForTimeout(150)
+}
+await page.mouse.click(20, 400)
+await page.waitForTimeout(300)
+await page.screenshot({ path: `${SHOT}/c-dark.png`, clip: { x: 150, y: 120, width: 980, height: 320 } })
+for (const cmd of ['theme light', 'rendering normal']) {
+  await page.keyboard.press('Meta+k')
+  await page.waitForSelector('.palette input')
+  await page.keyboard.type(cmd)
+  await page.waitForTimeout(200)
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(300)
+}
+await page.waitForTimeout(400)
+await page.screenshot({ path: `${SHOT}/c-light.png`, clip: { x: 150, y: 120, width: 980, height: 320 } })
+await browser.close()
