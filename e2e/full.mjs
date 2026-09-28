@@ -67,6 +67,9 @@ await page.waitForTimeout(600)
 
 // --- highlight: select a word via dblclick on text layer ---
 const span = page.locator('.page .textLayer span', { hasText: 'searchable' }).first()
+// keep the target clear of the auto-hiding header, which slides in over the top edge on mousemove
+await span.evaluate((el) => el.scrollIntoView({ block: 'center' }))
+await page.waitForTimeout(300)
 await span.dblclick()
 await page.waitForTimeout(300)
 check('selection popover appears', await page.locator('.selection-popover').isVisible())

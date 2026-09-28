@@ -434,16 +434,19 @@ export default function Reader({ bookId }: { bookId: string }) {
   // so clicks on a highlight are resolved by hit-testing the stored rects
   const onMouseUp = useCallback(
     (e: React.MouseEvent) => {
-      const { clientX, clientY, target } = e
+      const { clientX, clientY } = e
+      // resolve the target now: a click handler may re-render the popover and detach it before the timeout
+      const target = e.target as Element
+      const pageEl = target.closest?.('.page')
+      const inPopover = !!target.closest?.('.selection-popover')
       window.setTimeout(() => {
         const cap = captureSelection()
         if (cap) {
           setPopover({ kind: 'create', ...cap })
           return
         }
-        const pageEl = (target as Element).closest?.('.page')
         if (!pageEl) {
-          if (!(target as Element).closest?.('.selection-popover')) setPopover(null)
+          if (!inPopover) setPopover(null)
           return
         }
         const box = pageEl.getBoundingClientRect()
@@ -467,6 +470,11 @@ export default function Reader({ bookId }: { bookId: string }) {
     },
     [captureSelection],
   )
+
+  // a new press drops the old selection; a stale popover left under the drag would pull the selection into it
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!(e.target as Element).closest?.('.selection-popover')) setPopover(null)
+  }, [])
 
   // ----- search -----
   const searchRef = useRef<{ hits: SearchHit[]; index: number } | null>(null)
@@ -552,7 +560,7 @@ export default function Reader({ bookId }: { bookId: string }) {
     popover?.kind === 'existing' ? highlights.find((h) => h.id === popover.highlightId) : undefined
 
   return (
-    <div className={`reader page-filter-${pageFilter}`} onMouseUp={onMouseUp}>
+    <div className={`reader page-filter-${pageFilter}`} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
       <header className={`reader-chrome${chromeVisible ? '' : ' is-hidden'}`}>
         <button className="ghost-button" onClick={closeBook}>
           ← Library

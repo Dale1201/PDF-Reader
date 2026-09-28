@@ -1,5 +1,6 @@
 import * as pdfjs from 'pdfjs-dist'
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
+import { guardTextLayer } from './selectionGuard'
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -137,7 +138,17 @@ export function renderTextLayer(
     container,
     viewport,
   })
-  return { promise: layer.render(), cancel: () => layer.cancel() }
+  let unguard: (() => void) | undefined
+  const promise = layer.render().then(() => {
+    unguard = guardTextLayer(container)
+  })
+  return {
+    promise,
+    cancel: () => {
+      layer.cancel()
+      unguard?.()
+    },
+  }
 }
 
 export async function renderCoverDataUrl(doc: PdfDoc): Promise<string | undefined> {
