@@ -13,10 +13,10 @@
   --z-modal-backdrop: 40;
   --z-modal: 50;
   --z-toast: 60;
-  --highlight-yellow: rgb(250 222 75 / 0.45);
-  --highlight-green: rgb(115 218 132 / 0.45);
-  --highlight-blue: rgb(102 187 247 / 0.45);
-  --highlight-pink: rgb(247 140 182 / 0.45);
+  --highlight-yellow: rgb(250 222 75 / 0.28);
+  --highlight-green: rgb(115 218 132 / 0.24);
+  --highlight-blue: rgb(102 187 247 / 0.24);
+  --highlight-pink: rgb(247 140 182 / 0.24);
 }
 
 [data-theme='light'] {
@@ -545,13 +545,13 @@ kbd {
 }
 
 .page-filter-dark .highlight {
-  mix-blend-mode: normal;
+  mix-blend-mode: screen;
 }
 
-.page-filter-dark .hl-yellow { background: rgb(255 214 10 / 0.36); }
-.page-filter-dark .hl-green { background: rgb(52 199 89 / 0.36); }
-.page-filter-dark .hl-blue { background: rgb(10 132 255 / 0.42); }
-.page-filter-dark .hl-pink { background: rgb(255 55 135 / 0.38); }
+.page-filter-dark .hl-yellow { background: rgb(255 214 10 / 0.22); }
+.page-filter-dark .hl-green { background: rgb(52 199 89 / 0.22); }
+.page-filter-dark .hl-blue { background: rgb(10 132 255 / 0.26); }
+.page-filter-dark .hl-pink { background: rgb(255 55 135 / 0.23); }
 
 .hl-yellow { background: var(--highlight-yellow); }
 .hl-green { background: var(--highlight-green); }
